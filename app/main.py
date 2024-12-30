@@ -1,50 +1,71 @@
-from fastapi import FastAPI, HTTPException, Depends, Query
-from pydantic import BaseModel
-from typing import List
-import sqlite3
+import requests
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 import os
-import httpx
+from dotenv import load_dotenv
 
-# Environment variable for API key
-WEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
-BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
+# Load environment variables
+load_dotenv()
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
-app = FastAPI(title="Weather Dashboard API")
+if not WEATHER_API_KEY:
+    raise ValueError("WEATHER_API_KEY is not set in the environment variables")
 
-# Database setup
-def get_db():
-    conn = sqlite3.connect("weather.db")
-    conn.execute("CREATE TABLE IF NOT EXISTS favorites (id INTEGER PRIMARY KEY, city TEXT)")
-    return conn
+app = FastAPI()
 
-# Pydantic schemas
-class CityRequest(BaseModel):
-    city: str
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Replace with your frontend URL if different
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-class FavoriteCitiesResponse(BaseModel):
-    id: int
-    city: str
+# Endpoint to fetch weather for multiple cities
+@app.get("/weather/multiple")
+async def get_weather_for_multiple_cities():
+    cities = ["Haifa", "Paris", "London", "Madrid", "Berlin"]
+    weather_data = []
 
-# Routes
-@app.get("/")
-def root():
-    return {"message": "Welcome to the Weather Dashboard API"}
+    for city in cities:
+        weather_url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}"
+        try:
+            response = requests.get(weather_url)
+            response.raise_for_status()
+            data = response.json()
+            weather_data.append({
+                "city": city,
+                "condition": data["current"]["condition"]["text"],
+                "temperature": data["current"]["temp_c"],
+            })
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching data for {city}: {e}")
+            weather_data.append({"city": city, "error": "Unable to fetch weather"})
+        except KeyError:
+            print(f"Error parsing data for {city}")
+            weather_data.append({"city": city, "error": "Invalid response structure"})
 
-@app.post("/weather/")
-async def get_weather(city: str = Query(...)):  # Use Query to define it as a query parameter
-    available_cities = {"paris": "Sunny", "london": "Rainy"}  # Example mock data
-    if city.lower() not in available_cities:
-        raise HTTPException(status_code=404, detail="City not found")
-    return {"city": city, "weather": available_cities[city.lower()]}
+    return weather_data
 
-@app.post("/favorites/")
-def add_favorite_city(data: CityRequest, db=Depends(get_db)):
-    db.execute("INSERT INTO favorites (city) VALUES (?)", (data.city,))
-    db.commit()
-    return {"message": f"{data.city} added to favorites"}
 
-@app.get("/favorites/", response_model=List[FavoriteCitiesResponse])
-def get_favorite_cities(db=Depends(get_db)):
-    cursor = db.execute("SELECT id, city FROM favorites")
-    cities = cursor.fetchall()
-    return [{"id": row[0], "city": row[1]} for row in cities]
+# Endpoint to fetch weather for a single city
+@app.get("/weather/")
+async def get_weather(city: str = Query(...)):
+    weather_url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}"
+
+    try:
+        response = requests.get(weather_url)
+        response.raise_for_status()
+        data = response.json()
+
+        return {
+            "city": city,
+            "condition": data["current"]["condition"]["text"],
+            "temperature": data["current"]["temp_c"],
+        }
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching weather for {city}: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching data from WeatherAPI")
+    except KeyError:
+        raise HTTPException(status_code=404, detail="City not found in WeatherAPI data")
