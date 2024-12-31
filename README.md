@@ -1,5 +1,5 @@
 Create .env file
-OPENWEATHER_API_KEY=your_api_key_here
+WEATHER_API_KEY=your_api_key_here
 
 Install dependencies:
 pip install -r requirements.txt
