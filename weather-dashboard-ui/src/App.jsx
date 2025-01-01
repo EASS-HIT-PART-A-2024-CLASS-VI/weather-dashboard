@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { getWeatherForMultipleCities, getWeather } from "./api";
+import "./display.css"; // Include the CSS file
+import Display from "./display";
 
 function App() {
   const [weatherData, setWeatherData] = useState([]);
   const [searchCity, setSearchCity] = useState("");
-  const [searchedWeather, setSearchedWeather] = useState(null);
+  const [searchedCities, setSearchedCities] = useState([]);
+
+  const currentDate = new Date().toLocaleDateString();
+  const currentTime = new Date().toLocaleTimeString();
 
   // Fetch weather data for predefined cities on component mount
   useEffect(() => {
@@ -24,45 +29,36 @@ function App() {
     if (!searchCity.trim()) return;
     try {
       const data = await getWeather(searchCity.trim());
-      setSearchedWeather(data);
+      setSearchedCities((prevCities) => [...prevCities, data]); // Add the new city to the list
     } catch (error) {
       console.error("Error fetching weather for the searched city:", error);
     }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="app-container">
       <h1>Weather Dashboard</h1>
-
-      {/* Display predefined cities' weather */}
-      <h2>Weather in Predefined Cities:</h2>
-      <ul>
-        {weatherData.map((weather, index) => (
-          <li key={index}>
-            {weather.city}: {weather.condition}, {weather.temperature}°C
-          </li>
-        ))}
-      </ul>
 
       {/* Search for a city */}
       <h2>Search for a City:</h2>
-      <input
-        type="text"
-        value={searchCity}
-        onChange={(e) => setSearchCity(e.target.value)}
-        placeholder="Enter city name"
-      />
-      <button onClick={handleSearch}>Search</button>
+      <div className="search-container">
+        <input
+          type="text"
+          value={searchCity}
+          onChange={(e) => setSearchCity(e.target.value)}
+          placeholder="Enter city name"
+          className="search-input"
+        />
+        <button onClick={handleSearch} className="search-button">
+          Search
+        </button>
+      </div>
 
-      {/* Display weather for the searched city */}
-      {searchedWeather && (
-        <div>
-          <h3>Weather in {searchedWeather.city}:</h3>
-          <p>
-            {searchedWeather.condition}, {searchedWeather.temperature}°C
-          </p>
-        </div>
-      )}
+      {/* Display weather data */}
+      <Display
+        weatherData={weatherData}
+        searchedCities={searchedCities}
+      />
     </div>
   );
 }

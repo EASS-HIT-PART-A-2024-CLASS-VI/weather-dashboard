@@ -38,6 +38,7 @@ async def get_weather_for_multiple_cities():
                 "city": city,
                 "condition": data["current"]["condition"]["text"],
                 "temperature": data["current"]["temp_c"],
+                "iconUrl": data["current"]["condition"]["icon"]  # Extract icon code
             })
         except requests.exceptions.RequestException as e:
             print(f"Error fetching data for {city}: {e}")
@@ -63,6 +64,7 @@ async def get_weather(city: str = Query(...)):
             "city": city,
             "condition": data["current"]["condition"]["text"],
             "temperature": data["current"]["temp_c"],
+            "iconUrl": data["current"]["condition"]["icon"]  # Extract icon code
         }
     except requests.exceptions.RequestException as e:
         print(f"Error fetching weather for {city}: {e}")
