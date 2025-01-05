@@ -9,16 +9,22 @@ def test_root():
     assert response.json() == {"message": "Welcome to the Weather Dashboard API"}
 
 def test_get_weather():
-    response = client.post("/weather/", json={"city": "London"})
+    response = client.get("/weather/", params={"city": "London"})
     assert response.status_code == 200
-    assert "main" in response.json()
+    data = response.json()
+    assert "city" in data
+    assert "condition" in data
+    assert "temperature" in data
+    assert "iconUrl" in data
 
-def test_add_favorite():
-    response = client.post("/favorites/", json={"city": "Paris"})
+def test_get_weather_for_multiple_cities():
+    response = client.get("/weather/multiple")
     assert response.status_code == 200
-    assert response.json()["message"] == "Paris added to favorites"
-
-def test_get_favorites():
-    response = client.get("/favorites/")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    for city_weather in data:
+        assert "city" in city_weather
+        assert "condition" in city_weather
+        assert "temperature" in city_weather
+        assert "iconUrl" in city_weather

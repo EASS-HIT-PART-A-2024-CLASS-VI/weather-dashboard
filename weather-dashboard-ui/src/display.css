@@ -110,8 +110,9 @@
     display: inline-block;
   }
   
-  /* Container for searched cities */
+/* Container for searched cities */
 .searched-cities {
+  margin-top: 20px;
   display: flex; /* Arrange items in a row */
   flex-wrap: wrap; /* Wrap items to the next row if space runs out */
   gap: 20px; /* Add spacing between cards */
@@ -124,3 +125,4 @@
   gap: 20px;
   justify-content: center;
 }
+
