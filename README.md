@@ -35,9 +35,21 @@ docker-compose up --build
 - Backend: http://localhost:8000
 - Frontend: http://localhost:3000
 
+### Check if Docker Works
+1. Ensure Docker is installed and running.
+2. Navigate to the project root directory.
+3. Run the following command to build and start the containers:
+   ```
+   docker-compose up --build
+   ```
+4. Open your browser and navigate to:
+   - Backend: http://localhost:8000
+   - Frontend: http://localhost:3000
+
 ## Testing Instructions
 
 ### Backend Tests
+Navigate to the project root directory and run:
 ```
 pytest app/unit_tests.py
 ```

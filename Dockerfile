@@ -1,20 +1,31 @@
-# Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# Install dependencies and Rust (Cargo)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    curl && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    export PATH=$HOME/.cargo/bin:$PATH && \
+    rustup update
+
+# Explicitly set the PATH in the same RUN command to ensure it's available for subsequent commands
+ENV PATH="/root/.cargo/bin:$PATH"
+
+# Set working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Copy project files
 COPY . /app
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt --verbose
 
-# Make port 8000 available to the world outside this container
+# Expose the application port
 EXPOSE 8000
 
-# Define environment variable
-ENV NAME WeatherApp
-
-# Run app.py when the container launches
+# Start the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
