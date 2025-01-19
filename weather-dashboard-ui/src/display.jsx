@@ -12,7 +12,7 @@ const Display = ({ weatherData, searchedWeather, searchedCities, currentDate, cu
             city={weather.city}
             condition={weather.condition}
             temperature={weather.temperature}
-            icon={weather.iconUrl ? `${weather.iconUrl}` : ""}
+            icon={weather.icon_url ? `${weather.icon_url}` : ""}
             date={currentDate}
             day={currentTime}
           />
@@ -27,7 +27,7 @@ const Display = ({ weatherData, searchedWeather, searchedCities, currentDate, cu
             city={cityWeather.city}
             condition={cityWeather.condition}
             temperature={cityWeather.temperature}
-            icon={cityWeather.iconUrl ? `${cityWeather.iconUrl}` : ""}
+            icon={cityWeather.icon_url ? `${cityWeather.icon_url}` : ""}
             date={currentDate}
             day={currentTime}
           />

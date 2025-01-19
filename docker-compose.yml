@@ -11,6 +11,7 @@ services:
       - WEATHER_API_KEY=${WEATHER_API_KEY}
     volumes:
       - .:/app
+      - weather-db:/app/weather.db
 
   frontend:
     build:
@@ -22,3 +23,6 @@ services:
       - REACT_APP_API_URL=http://localhost:8000
     volumes:
       - ./weather-dashboard-ui:/app
+
+volumes:
+  weather-db:

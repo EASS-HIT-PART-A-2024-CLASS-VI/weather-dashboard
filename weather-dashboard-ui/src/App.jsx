@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { getWeatherForMultipleCities, getWeather } from "./api";
-import WeatherCard from "./WeatherCard";
 import "./display.css"; // Include the CSS file
 import Display from "./display";
 
@@ -40,14 +39,13 @@ function App() {
           city: data.city,
           condition: data.condition,
           temperature: data.temperature,
-          iconUrl: data.iconUrl,
+          icon_url: data.icon_url,  // Ensure the icon URL is passed correctly
         },
       ]);
     } catch (error) {
       console.error("Error fetching weather for the searched city:", error);
     }
   };
-  
 
   return (
     <div className="app-container">

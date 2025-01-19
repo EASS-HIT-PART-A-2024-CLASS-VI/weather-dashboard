@@ -20,9 +20,9 @@ WORKDIR /app
 # Copy project files
 COPY . /app
 
-# Install Python dependencies
+# Install Python dependencies with --user option
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt --verbose
+RUN pip install --user --no-cache-dir -r requirements.txt --verbose
 
 # Expose the application port
 EXPOSE 8000
