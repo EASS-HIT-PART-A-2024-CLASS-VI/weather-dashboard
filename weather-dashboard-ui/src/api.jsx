@@ -17,3 +17,18 @@ export async function getWeather(city) {
   }
   return response.json();
 }
+
+// Add a city to the predefined cities list
+export async function addPredefinedCity(city) {
+  const response = await fetch(`${API_BASE_URL}/predefined_cities/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ city }),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to add predefined city");
+  }
+  return response.json();
+}

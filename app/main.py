@@ -5,7 +5,7 @@ import requests
 import os
 from dotenv import load_dotenv
 
-from . import models, database, schemas
+from app import models, database, schemas, crud
 
 # Load environment variables
 load_dotenv()
@@ -35,37 +35,40 @@ def get_db():
     finally:
         db.close()
 
-# Endpoint to fetch weather for multiple cities
+# Endpoint to add a city to the predefined cities list
+@app.post("/predefined_cities/", response_model=schemas.PredefinedCity)
+async def add_predefined_city(city: schemas.PredefinedCityCreate, db: Session = Depends(get_db)):
+    return crud.create_predefined_city(db=db, city=city)
+
+# Endpoint to fetch weather for multiple predefined cities
 @app.get("/weather/multiple", response_model=list[schemas.Weather])
 async def get_weather_for_multiple_cities(db: Session = Depends(get_db)):
-    cities = ["Haifa", "Paris", "London", "Madrid", "Berlin"]
+    predefined_cities = crud.get_predefined_cities(db=db)
     weather_data = []
 
-    for city in cities:
-        print(f"Fetching weather data for {city}")  # Add logging
-        weather_url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}"
+    for city in predefined_cities:
+        print(f"Fetching weather data for {city.city}")  # Add logging
+        weather_url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city.city}"
         try:
             response = requests.get(weather_url)
             response.raise_for_status()
             data = response.json()
-            print(f"Weather data for {city}: {data}")  # Add logging
-            weather = models.Weather(
-                city=city,
+            print(f"Weather data for {city.city}: {data}")  # Add logging
+            weather = schemas.WeatherCreate(
+                city=city.city,
                 condition=data["current"]["condition"]["text"],
                 temperature=data["current"]["temp_c"],
                 icon_url=f"https:{data['current']['condition']['icon']}"  # Ensure the icon URL is complete
             )
-            db.add(weather)
-            db.commit()
-            db.refresh(weather)
-            weather_data.append(weather)
-            print(f"Weather data for {city} added to the database")  # Add logging
+            db_weather = crud.create_weather(db=db, weather=weather)
+            weather_data.append(db_weather)
+            print(f"Weather data for {city.city} added to the database")  # Add logging
         except requests.exceptions.RequestException as e:
-            print(f"Error fetching data for {city}: {e}")
-            weather_data.append({"city": city, "error": "Unable to fetch weather"})
+            print(f"Error fetching data for {city.city}: {e}")
+            weather_data.append({"city": city.city, "error": "Unable to fetch weather"})
         except KeyError as e:
-            print(f"Error parsing data for {city}: {e}")
-            weather_data.append({"city": city, "error": "Invalid response structure"})
+            print(f"Error parsing data for {city.city}: {e}")
+            weather_data.append({"city": city.city, "error": "Invalid response structure"})
 
     return weather_data
 
@@ -78,17 +81,14 @@ async def get_weather(city: str = Query(...), db: Session = Depends(get_db)):
         response = requests.get(weather_url)
         response.raise_for_status()
         data = response.json()
-        weather = models.Weather(
+        weather = schemas.WeatherCreate(
             city=city,
             condition=data["current"]["condition"]["text"],
             temperature=data["current"]["temp_c"],
             icon_url=f"https:{data['current']['condition']['icon']}"  # Ensure the icon URL is complete
         )
-        db.add(weather)
-        db.commit()
-        db.refresh(weather)
-
-        return weather
+        db_weather = crud.create_weather(db=db, weather=weather)
+        return db_weather
     except requests.exceptions.RequestException as e:
         print(f"Error fetching weather for {city}: {e}")
         raise HTTPException(status_code=500, detail="Error fetching data from WeatherAPI")
@@ -98,12 +98,10 @@ async def get_weather(city: str = Query(...), db: Session = Depends(get_db)):
 # Endpoint to list all weather data
 @app.get("/weather/all", response_model=list[schemas.Weather])
 async def get_all_weather(db: Session = Depends(get_db)):
-    weather_data = db.query(models.Weather).all()
-    return weather_data
+    return crud.get_all_weather(db=db)
 
 # Endpoint to clear all weather data
 @app.delete("/weather/clear")
 async def clear_weather_data(db: Session = Depends(get_db)):
-    db.query(models.Weather).delete()
-    db.commit()
+    crud.delete_all_weather(db=db)
     return {"message": "All weather data cleared"}

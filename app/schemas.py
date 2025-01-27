@@ -13,4 +13,16 @@ class Weather(WeatherBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class PredefinedCityBase(BaseModel):
+    city: str
+
+class PredefinedCityCreate(PredefinedCityBase):
+    pass
+
+class PredefinedCity(PredefinedCityBase):
+    id: int
+
+    class Config:
+        from_attributes = True
