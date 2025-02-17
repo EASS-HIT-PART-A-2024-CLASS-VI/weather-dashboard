@@ -1,7 +1,7 @@
 import React from "react";
 import WeatherCard from "./WeatherCard";
 
-const Display = ({ weatherData, searchedWeather, searchedCities, currentDate, currentTime }) => {
+const Display = ({ weatherData, searchedWeather, searchedCities, currentDate, currentTime, onDelete }) => {
   return (
     <div>
       {/* Display predefined cities' weather */}
@@ -15,6 +15,9 @@ const Display = ({ weatherData, searchedWeather, searchedCities, currentDate, cu
             icon={weather.icon_url ? `${weather.icon_url}` : ""}
             date={currentDate}
             day={currentTime}
+            onDelete={onDelete} // Pass the delete function
+            subscriptionId={weather.subscriptionId} // Pass the subscription ID
+            isDefault={weather.isDefault} // Pass the isDefault flag
           />
         ))}
       </div>

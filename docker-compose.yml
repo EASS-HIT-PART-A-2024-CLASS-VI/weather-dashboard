@@ -24,5 +24,18 @@ services:
     volumes:
       - ./weather-dashboard-ui:/app
 
+  notification:
+    build:
+      context: ./notification_service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - SMTP_SERVER=smtp.example.com
+      - SMTP_PORT=587
+      - SMTP_USER=your-email@example.com
+      - SMTP_PASSWORD=your-password
+      - BACKEND_URL=http://backend:8000
+
 volumes:
   weather-db:

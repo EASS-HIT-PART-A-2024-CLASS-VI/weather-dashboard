@@ -1,5 +1,8 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
+import logging
+
+logger = logging.getLogger(__name__)
 
 def create_weather(db: Session, weather: schemas.WeatherCreate):
     db_weather = models.Weather(**weather.dict())
@@ -24,3 +27,25 @@ def create_predefined_city(db: Session, city: schemas.PredefinedCityCreate):
 
 def get_predefined_cities(db: Session):
     return db.query(models.PredefinedCity).all()
+
+def create_user(db: Session, user: schemas.UserCreate):
+    db_user = models.User(email=user.email, password=user.password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
+
+def create_subscription(db: Session, subscription: schemas.SubscriptionCreate, user_id: int):
+    db_subscription = models.Subscription(**subscription.dict(), user_id=user_id)
+    db.add(db_subscription)
+    db.commit()
+    db.refresh(db_subscription)
+    return db_subscription
+
+def get_subscriptions_by_user(db: Session, user_id: int):
+    subscriptions = db.query(models.Subscription).filter(models.Subscription.user_id == user_id).all()
+    logger.info(f"User ID {user_id} has subscriptions: {subscriptions}")
+    return subscriptions

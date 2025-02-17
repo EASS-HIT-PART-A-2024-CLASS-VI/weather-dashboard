@@ -1,100 +1,97 @@
 # Weather Dashboard
 
-This project is a weather dashboard application built with FastAPI for the backend and React for the frontend. It allows users to fetch weather data for multiple predefined cities and add new cities to the predefined list.
+Welcome to the Weather Dashboard project! This project allows you to view weather information for multiple cities, register and log in users, and manage city subscriptions. Let's get started!
 
 ## Prerequisites
+
+Before you begin, make sure you have the following installed:
 
 - Docker
 - Docker Compose
 
-## Setup
+## Getting Started
 
-1. Clone the repository:
+1. **Clone the repository**:
 
-   ```sh
-   git clone https://github.com/yourusername/weather-dashboard.git
-   cd weather-dashboard
+   ```bash
+   git clone https://github.com/your-username/fastap.git
+   cd fastap
    ```
 
-2. Create a `.env` file in the root directory and add your Weather API key:
+2. **Set up environment variables**:
+
+   Create a `.env` file in the root directory and add the following environment variables:
 
    ```env
-   WEATHER_API_KEY=your_weather_api_key_here
+   WEATHER_API_KEY=your-weather-api-key
+   SECRET_KEY=your-secret-key
    ```
 
-## Running the Application
+3. **Build and run the Docker containers**:
 
-1. Build and run the Docker containers:
-
-   ```sh
+   ```bash
    docker-compose up --build
    ```
 
-2. The backend will be available at `http://localhost:8000`.
-3. The frontend will be available at `http://localhost:3001`.
+   This will build and start the backend, frontend, and notification services.
 
-## API Endpoints
+4. **Access the application**:
 
-- `GET /weather/multiple`: Fetch weather data for multiple predefined cities.
-- `GET /weather/`: Fetch weather data for a specific city.
-- `POST /predefined_cities/`: Add a city to the predefined cities list.
-- `GET /weather/all`: List all weather data.
-- `DELETE /weather/clear`: Clear all weather data.
+   - Frontend: Open your browser and go to `http://localhost:3000`
+   - Backend API: The backend API is running at `http://localhost:8000`
+   - Notification Service: The notification service is running at `http://localhost:8001`
 
-## Frontend
+## Features
 
-The frontend is a React application that allows users to:
+- **Weather Information**: View weather information for multiple predefined cities.
+- **User Registration and Login**: Register and log in users.
+- **City Subscriptions**: Subscribe to cities to receive weather updates.
+- **Notifications**: Send weather updates to subscribed users via email.
 
-- Search for weather data for a specific city.
-- Add a city to the predefined cities list.
-- View weather data for predefined cities.
+## Project Structure
 
-## Viewing the SQLite Database
+Here's a quick overview of the project structure:
 
-The application uses SQLite as the database. The database file is named `weather.db` and is located in the `/app` directory inside the Docker container.
+```
+fastap/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── crud.py
+│   ├── database.py
+├── notification_service/
+│   ├── Dockerfile
+│   ├── main.py
+├── weather-dashboard-ui/
+│   ├── Dockerfile
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── App.jsx
+│   │   ├── api.js
+│   │   ├── index.js
+│   │   ├── setupTests.js
+├── Dockerfile
+├── docker-compose.yml
+├── .env
+```
 
-To view the data inside the SQLite database, you can use one of the following methods:
+## Running Tests
 
-### Option 1: SQLite Browser
+To run the tests, use the following command:
 
-1. Download and install [DB Browser for SQLite](https://sqlitebrowser.org/).
-2. Open the application and open the `weather.db` file located in the `/app` directory of the Docker container.
+```bash
+pytest /c:/Users/afekd/fastap/tests
+```
 
-### Option 2: SQLite Command Line
+## Resetting the Database
 
-1. Open a terminal or command prompt.
-2. Navigate to the directory containing your database file.
-3. Run the following command to open the SQLite command-line tool:
-   ```sh
-   sqlite3 weather.db
-   ```
-4. Once inside the SQLite prompt, you can run SQL queries to view the data. For example:
-   ```sql
-   .tables  -- List all tables
-   SELECT * FROM weather;  -- View data in the weather table
-   SELECT * FROM predefined_cities;  -- View data in the predefined_cities table
-   ```
+To reset the database, delete the `weather.db` file from the project directory. This will remove all the data in your SQLite database, and a new empty database will be created the next time you run your application.
 
-## Development
+```bash
+rm weather.db
+```
 
-To run the application in development mode:
-
-1. Start the backend:
-
-   ```sh
-   uvicorn app.main:app --reload
-   ```
-
-2. Start the frontend:
-
-   ```sh
-   cd weather-dashboard-ui
-   npm install
-   npm start
-   ```
-
-The backend will be available at `http://localhost:8000` and the frontend at `http://localhost:3000`.
-
-## License
-
-This project is licensed under the MIT License.
+After deleting the `weather.db` file, restart the application to create a new empty database.

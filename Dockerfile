@@ -20,9 +20,9 @@ WORKDIR /app
 # Copy project files
 COPY . /app
 
-# Install Python dependencies with --user option
+# Install Python dependencies
 RUN pip install --upgrade pip
-RUN pip install --user --no-cache-dir -r requirements.txt --verbose
+RUN pip install --no-cache-dir fastapi uvicorn sqlalchemy requests python-dotenv passlib bcrypt "python-jose[cryptography]" python-multipart
 
 # Expose the application port
 EXPOSE 8000
