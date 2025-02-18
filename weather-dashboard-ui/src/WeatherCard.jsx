@@ -1,24 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import "./display.css"; // Import the CSS file
 
 const WeatherCard = ({ city, condition, temperature, icon, date, day, onDelete, subscriptionId, isDefault }) => {
-  const [error, setError] = useState("");
-
-  const handleDelete = () => {
-    if (isDefault) {
-      setError("You can't delete this city.");
-    } else {
-      console.log(`Deleting subscription with ID: ${subscriptionId}`);
-      onDelete(subscriptionId);
-    }
-  };
-
   return (
-    <div className={`weather-card ${isDefault ? "default-city" : ""}`}>
+    <div className="weather-card">
       <div className="weather-card-header">
         <h3>{city}</h3>
-        {!isDefault && onDelete && (
-          <button className="delete-button" onClick={handleDelete}>
+        {!isDefault && subscriptionId && onDelete && (
+          <button
+            className="delete-button"
+            onClick={() => {
+              console.log(`Deleting subscription with ID: ${subscriptionId}`);
+              onDelete(subscriptionId);
+            }}
+          >
             X
           </button>
         )}
@@ -30,7 +25,6 @@ const WeatherCard = ({ city, condition, temperature, icon, date, day, onDelete, 
         <p className="weather-date">{date}</p>
         <p className="weather-day">{day}</p>
       </div>
-      {error && <p className="error-message">{error}</p>}
     </div>
   );
 };

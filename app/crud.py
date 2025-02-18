@@ -18,16 +18,6 @@ def delete_all_weather(db: Session):
     db.query(models.Weather).delete()
     db.commit()
 
-def create_predefined_city(db: Session, city: schemas.PredefinedCityCreate):
-    db_city = models.PredefinedCity(**city.dict())
-    db.add(db_city)
-    db.commit()
-    db.refresh(db_city)
-    return db_city
-
-def get_predefined_cities(db: Session):
-    return db.query(models.PredefinedCity).all()
-
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(email=user.email, password=user.password)
     db.add(db_user)
@@ -49,3 +39,6 @@ def get_subscriptions_by_user(db: Session, user_id: int):
     subscriptions = db.query(models.Subscription).filter(models.Subscription.user_id == user_id).all()
     logger.info(f"User ID {user_id} has subscriptions: {subscriptions}")
     return subscriptions
+
+def get_default_subscriptions(db: Session):
+    return db.query(models.Subscription).filter(models.Subscription.is_default == True).all()

@@ -162,40 +162,56 @@ def send_email(email: str, message: str):
         server.login("your-email@example.com", "your-password")
         server.sendmail("your-email@example.com", email, msg.as_string())
 
-# Endpoint to add a city to the predefined cities list
-@app.post("/predefined_cities/", response_model=schemas.PredefinedCity)
-async def add_predefined_city(city: schemas.PredefinedCityCreate, db: Session = Depends(get_db)):
-    return crud.create_predefined_city(db=db, city=city)
+# Initialize default cities
+def initialize_default_cities(db: Session):
+    default_cities = ["Tokyo", "Berlin", "Miami", "Jerusalem"]
+    for city in default_cities:
+        if not db.query(models.Subscription).filter(models.Subscription.city == city, models.Subscription.is_default == True).first():
+            db_subscription = models.Subscription(city=city, is_default=True, user_id=None)
+            db.add(db_subscription)
+            db.commit()
+
+@app.on_event("startup")
+async def startup_event():
+    db = next(get_db())
+    initialize_default_cities(db)
 
 # Endpoint to fetch weather for multiple predefined cities
 @app.get("/weather/multiple", response_model=list[schemas.Weather])
 async def get_weather_for_multiple_cities(db: Session = Depends(get_db)):
-    predefined_cities = crud.get_predefined_cities(db=db)
+    subscriptions = crud.get_default_subscriptions(db=db)
     weather_data = []
 
-    for city in predefined_cities:
-        logger.info(f"Fetching weather data for {city.city}")  # Add logging
-        weather_url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city.city}"
+    for subscription in subscriptions:
+        logger.info(f"Fetching weather data for {subscription.city}")  # Add logging
+        weather_url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={subscription.city}"
         try:
             response = requests.get(weather_url)
             response.raise_for_status()
             data = response.json()
-            logger.info(f"Weather data for {city.city}: {data}")  # Add logging
+            logger.info(f"Weather data for {subscription.city}: {data}")  # Add logging
             weather = schemas.WeatherCreate(
-                city=city.city,
+                city=subscription.city,
                 condition=data["current"]["condition"]["text"],
                 temperature=data["current"]["temp_c"],
                 icon_url=f"https:{data['current']['condition']['icon']}"  # Ensure the icon URL is complete
             )
             db_weather = crud.create_weather(db=db, weather=weather)
-            weather_data.append(db_weather)
-            logger.info(f"Weather data for {city.city} added to the database")  # Add logging
+            weather_data.append({
+                "id": db_weather.id,
+                "city": db_weather.city,
+                "condition": db_weather.condition,
+                "temperature": db_weather.temperature,
+                "icon_url": db_weather.icon_url,
+                "isDefault": subscription.is_default
+            })
+            logger.info(f"Weather data for {subscription.city} added to the database")  # Add logging
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error fetching data for {city.city}: {e}")
-            weather_data.append({"city": city.city, "error": "Unable to fetch weather"})
+            logger.error(f"Error fetching data for {subscription.city}: {e}")
+            weather_data.append({"city": subscription.city, "error": "Unable to fetch weather", "isDefault": subscription.is_default})
         except KeyError as e:
-            logger.error(f"Error parsing data for {city.city}: {e}")
-            weather_data.append({"city": city.city, "error": "Invalid response structure"})
+            logger.error(f"Error parsing data for {subscription.city}: {e}")
+            weather_data.append({"city": subscription.city, "error": "Invalid response structure", "isDefault": subscription.is_default})
 
     return weather_data
 

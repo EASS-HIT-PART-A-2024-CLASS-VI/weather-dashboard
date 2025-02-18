@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getWeatherForMultipleCities, getWeather, registerUser, loginUser, createSubscription, getSubscriptions, deleteSubscription, getDefaultSubscriptions } from "./api";
+import { getWeatherForMultipleCities, getWeather, registerUser, loginUser, createSubscription, getSubscriptions, deleteSubscription } from "./api";
 import "./display.css"; // Include the CSS file
 import Display from "./display";
 import SearchCity from "./components/SearchCity"; // Import the new SearchCity component
@@ -7,6 +7,7 @@ import WeatherCard from "./WeatherCard"; // Import the WeatherCard component
 
 function App() {
   const [weatherData, setWeatherData] = useState([]);
+  const [defaultWeatherData, setDefaultWeatherData] = useState([]);
   const [searchedWeather, setSearchedWeather] = useState(null);
   const currentDate = new Date().toLocaleDateString();
   const currentTime = new Date().toLocaleTimeString();
@@ -19,32 +20,21 @@ function App() {
   const [loggedInEmail, setLoggedInEmail] = useState(''); // State to store logged-in user's email
   const [error, setError] = useState('');
   const [subscriptions, setSubscriptions] = useState([]);
-  const [defaultSubscriptions, setDefaultSubscriptions] = useState([]); // State for default subscriptions
 
   // Fetch weather data for predefined cities on component mount
   useEffect(() => {
     async function fetchWeatherData() {
       try {
         const data = await getWeatherForMultipleCities();
-        setWeatherData(data);
+        const defaultData = data.filter(weather => weather.isDefault);
+        const subscribedData = data.filter(weather => !weather.isDefault);
+        setDefaultWeatherData(defaultData);
+        setWeatherData(subscribedData);
       } catch (error) {
         console.error("Error fetching weather data for multiple cities:", error);
       }
     }
     fetchWeatherData();
-  }, []);
-
-  // Fetch default subscriptions on component mount
-  useEffect(() => {
-    async function fetchDefaultSubscriptions() {
-      try {
-        const data = await getDefaultSubscriptions();
-        setDefaultSubscriptions(data);
-      } catch (error) {
-        console.error("Error fetching default subscriptions:", error);
-      }
-    }
-    fetchDefaultSubscriptions();
   }, []);
 
   // Handle search for a specific city
@@ -159,13 +149,13 @@ function App() {
       {/* Display default cities' weather */}
       <h2>Default Cities:</h2>
       <div className="weather-cards-container">
-        {defaultSubscriptions.map((subscription) => (
+        {defaultWeatherData.map((weather, index) => (
           <WeatherCard
-            key={subscription.id}
-            city={subscription.city}
-            condition={subscription.condition}
-            temperature={subscription.temperature}
-            icon={subscription.icon_url}
+            key={index}
+            city={weather.city}
+            condition={weather.condition}
+            temperature={weather.temperature}
+            icon={weather.icon_url ? `${weather.icon_url}` : ""}
             date={currentDate}
             day={currentTime}
             isDefault={true}
