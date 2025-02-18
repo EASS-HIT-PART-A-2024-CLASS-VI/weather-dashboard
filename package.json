@@ -1,0 +1,23 @@
+{
+  "name": "fastap",
+  "version": "1.0.0",
+  "description": "Welcome to the Weather Dashboard project! This project allows you to view weather information for multiple cities, register and log in users, and manage city subscriptions. Let's get started!",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EASS-HIT-PART-A-2024-CLASS-VI/weather-dashboard.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EASS-HIT-PART-A-2024-CLASS-VI/weather-dashboard/issues"
+  },
+  "homepage": "https://github.com/EASS-HIT-PART-A-2024-CLASS-VI/weather-dashboard#readme"
+}
