@@ -11,7 +11,9 @@ services:
       - WEATHER_API_KEY=${WEATHER_API_KEY}
     volumes:
       - .:/app
-      - weather-db:/app/weather.db
+      - weather-db:/app/weather_data
+    networks:
+      - weather-network
 
   frontend:
     build:
@@ -23,6 +25,8 @@ services:
       - REACT_APP_API_URL=http://localhost:8000
     volumes:
       - ./weather-dashboard-ui:/app
+    networks:
+      - weather-network
 
   notification:
     build:
@@ -36,6 +40,12 @@ services:
       - SMTP_USER=your-email@example.com
       - SMTP_PASSWORD=your-password
       - BACKEND_URL=http://backend:8000
+    networks:
+      - weather-network
 
 volumes:
   weather-db:
+
+networks:
+  weather-network:
+    driver: bridge
