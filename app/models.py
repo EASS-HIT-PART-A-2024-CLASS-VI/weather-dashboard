@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from .database import Base
 
 class Weather(Base):
     __tablename__ = "weather"
@@ -32,6 +30,6 @@ class Subscription(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    city = Column(String)
+    city = Column(String, index=True)
     is_default = Column(Boolean, default=False)
     user = relationship("User", back_populates="subscriptions")
