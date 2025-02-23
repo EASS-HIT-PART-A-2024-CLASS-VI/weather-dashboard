@@ -1,6 +1,12 @@
 # Weather Dashboard
 
-Welcome to the Weather Dashboard project! This project allows you to view weather information for multiple cities, register and log in users, and manage city subscriptions. Let's get started!
+Welcome to the Weather Dashboard project! This project allows you to view weather information for multiple cities, register and log in users, and manage city subscriptions. The application is built using React for the frontend, FastAPI for the backend, SQLite for data storage, and Docker for containerization.
+
+## Project Explanation Video
+
+Watch the video below for a detailed explanation of the project:
+
+[![Weather Dashboard Project Explanation](https://img.youtube.com/vi/XvtxC01EsYk/0.jpg)](https://youtu.be/XvtxC01EsYk)
 
 ## Prerequisites
 

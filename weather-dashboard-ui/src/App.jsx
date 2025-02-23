@@ -121,6 +121,9 @@ function App() {
       const data = await getSubscriptions(token);
       setSubscriptions(data);
 
+      // Clear existing weather data
+      setWeatherData([]);
+
       // Fetch weather data for each subscribed city
       const weatherPromises = data.map(async (subscription) => {
         try {
@@ -133,7 +136,7 @@ function App() {
       });
 
       const weatherResults = await Promise.all(weatherPromises);
-      setWeatherData((prevWeatherData) => [...prevWeatherData, ...weatherResults]);
+      setWeatherData(weatherResults);
     } catch (err) {
       setError('Failed to fetch subscriptions');
     }
