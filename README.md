@@ -6,7 +6,7 @@ Welcome to the Weather Dashboard project! This project allows you to view weathe
 
 Watch the video below for a detailed explanation of the project:
 
-[![Weather Dashboard Project Explanation](https://img.youtube.com/vi/XvtxC01EsYk/0.jpg)](https://youtu.be/XvtxC01EsYk)
+[![Weather Dashboard Project Explanation](https://img.youtube.com/vi/XvtxC01EsYk/0.jpg)](https://youtu.be/OsDytj2VIj4)
 
 ## Prerequisites
 
@@ -29,9 +29,22 @@ Before you begin, make sure you have the following installed:
    Create a `.env` file in the root directory and add the following environment variables:
 
    ```env
+   WEATHER_API_URL=http://api.weatherapi.com/v1/current.json
    WEATHER_API_KEY=your-weather-api-key
-   SECRET_KEY=your-secret-key
+   SECRET_KEY=your-secure-secret-key
+   SMTP_SERVER=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASSWORD=your-app-password
    ```
+
+   - `WEATHER_API_URL`: The URL for the weather API.
+   - `WEATHER_API_KEY`: Your API key for the weather API.
+   - `SECRET_KEY`: A secure secret key for JWT token generation.
+   - `SMTP_SERVER`: The SMTP server address for sending emails.
+   - `SMTP_PORT`: The SMTP server port.
+   - `SMTP_USER`: Your email address used for sending emails.
+   - `SMTP_PASSWORD`: Your email password or app password if using Gmail.
 
 3. **Build and run the Docker containers**:
 
