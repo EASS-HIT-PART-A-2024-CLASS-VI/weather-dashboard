@@ -100,7 +100,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # Endpoint to login a user
 @app.post("/token", response_model=schemas.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login_for_access_token(background_tasks: BackgroundTasks, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = crud.get_user_by_email(db, email=form_data.username)
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
@@ -112,6 +112,19 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
+    
+    # Fetch weather data for user's subscribed cities
+    subscriptions = crud.get_subscriptions_by_user(db=db, user_id=user.id)
+    message = f"Hello {user.email},\n\nYou have successfully logged in to the Weather Dashboard.\n\nWeather updates for your subscribed cities:\n"
+    for subscription in subscriptions:
+        weather_url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={subscription.city}"
+        response = requests.get(weather_url)
+        data = response.json()
+        message += f"{subscription.city}: {data['current']['condition']['text']}, {data['current']['temp_c']}°C\n"
+    
+    logger.info(f"Sending login notification email to {user.email}")
+    background_tasks.add_task(send_email, user.email, message)
+    
     return {"access_token": access_token, "token_type": "bearer"}
 
 # Endpoint to create a subscription for a user
@@ -149,18 +162,25 @@ async def send_notification(background_tasks: BackgroundTasks, db: Session = Dep
         response = requests.get(weather_url)
         data = response.json()
         message += f"{subscription.city}: {data['current']['condition']['text']}, {data['current']['temp_c']}°C\n"
+    logger.info(f"Sending weather notification email to {current_user.email}")
     background_tasks.add_task(send_email, current_user.email, message)
     return {"message": "Notification sent"}
 
 def send_email(email: str, message: str):
-    msg = MIMEText(message)
-    msg["Subject"] = "Weather Update"
-    msg["From"] = "your-email@example.com"
-    msg["To"] = email
+    logger.info(f"Attempting to send email to {email}")
+    try:
+        msg = MIMEText(message)
+        msg["Subject"] = "Weather Update"
+        msg["From"] = os.getenv("SMTP_USER")
+        msg["To"] = email
 
-    with smtplib.SMTP("smtp.example.com", 587) as server:
-        server.login("your-email@example.com", "your-password")
-        server.sendmail("your-email@example.com", email, msg.as_string())
+        with smtplib.SMTP(os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))) as server:
+            server.starttls()
+            server.login(os.getenv("SMTP_USER"), os.getenv("SMTP_PASSWORD"))
+            server.sendmail(os.getenv("SMTP_USER"), email, msg.as_string())
+        logger.info(f"Email sent to {email}")
+    except Exception as e:
+        logger.error(f"Failed to send email to {email}: {e}")
 
 # Initialize default cities
 def initialize_default_cities(db: Session):
